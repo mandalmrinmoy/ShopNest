@@ -13,17 +13,17 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  setMenuOpen(false);
+  logout();
+  navigate("/login");
+};
   const totalItems = cartItems.reduce(
   (acc, item) => acc + item.qty,
   0
 );
 
   return (
-    <nav className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-5">
+<nav className="fixed top-0 left-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">      <div className="max-w-7xl mx-auto px-5">
 
         <div className="h-20 flex items-center justify-between">
 

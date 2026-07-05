@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import ProductCard from "../components/ProductCard";
 import { motion } from "motion/react";
 
+const PRODUCTS_PER_PAGE = 8;
+
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +13,7 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState("");
   const [rating, setRating] = useState("");
   const [sort, setSort] = useState("latest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const categories = [
     { icon: "🔥", name: "All" },
@@ -20,6 +23,13 @@ const Shop = () => {
     { icon: "⌚", name: "Smart Watch" },
     { icon: "🖥", name: "Monitor" },
     { icon: "⌨", name: "Accessory" },
+  ];
+
+  const sortOptions = [
+    { value: "latest", label: "Latest" },
+    { value: "low", label: "Price Low → High" },
+    { value: "high", label: "Price High → Low" },
+    { value: "rating", label: "Highest Rated" },
   ];
 
   useEffect(() => {
@@ -100,8 +110,49 @@ const Shop = () => {
     return filtered;
   }, [products, search, category, priceRange, rating, sort]);
 
+  // Reset to page 1 whenever filters/sort change the result set
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, category, priceRange, rating, sort]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE),
+  );
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  const goToPage = (page) => {
+    const clamped = Math.min(Math.max(page, 1), totalPages);
+    setCurrentPage(clamped);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Build a compact page number list with ellipses
+  const getPageNumbers = () => {
+    const pages = [];
+    const delta = 1;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= currentPage - delta && i <= currentPage + delta)
+      ) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...");
+      }
+    }
+
+    return pages;
+  };
+
   return (
-    <div className="w-full max-w-[1920px] mx-auto px-8 py-10">
+    <div className="w-full max-w-[1920px] mx-auto px-8 py-10 pt-28">
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -151,25 +202,32 @@ const Shop = () => {
       {/* Main Layout */}
       <div className="grid lg:grid-cols-[320px_1fr] gap-8">
         {/* Sidebar */}
-        <div className="bg-zinc-900 border border-white/5 rounded-3xl p-6 sticky top-24 self-start">
+        <div className="hidden lg:block bg-zinc-900 border border-white/5 rounded-3xl p-6 sticky top-24 self-start">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">Filters</h2>
 
             <button
               onClick={clearFilters}
-              className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-2 rounded-lg"
+              className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-2 rounded-lg cursor-pointer"
             >
               Clear
             </button>
           </div>
 
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-white mb-8"
-          />
+          <h3 className="text-white font-semibold mb-4">Sort By</h3>
+
+          <div className="space-y-3 text-zinc-300 mb-4">
+            {sortOptions.map((option) => (
+              <label key={option.value} className="flex gap-2">
+                <input
+                  type="checkbox"
+                  checked={sort === option.value}
+                  onChange={() => setSort(option.value)}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
 
           <h3 className="text-white font-semibold mb-4">Price Range</h3>
 
@@ -217,7 +275,7 @@ const Shop = () => {
 
           <h3 className="text-white font-semibold mb-4">Rating</h3>
 
-          <div className="space-y-3 text-zinc-300">
+          <div className="space-y-3 text-zinc-300 mb-8">
             <label className="flex gap-2">
               <input
                 type="radio"
@@ -257,20 +315,20 @@ const Shop = () => {
               <h2 className="text-3xl font-bold text-white">Products</h2>
 
               <p className="text-zinc-400">
-                Showing {filteredProducts.length} products
+                Showing {filteredProducts.length === 0 ? 0 : (currentPage - 1) * PRODUCTS_PER_PAGE + 1}
+                {"–"}
+                {Math.min(currentPage * PRODUCTS_PER_PAGE, filteredProducts.length)} of{" "}
+                {filteredProducts.length} products
               </p>
             </div>
 
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white"
-            >
-              <option value="latest">Latest</option>
-              <option value="low">Price Low → High</option>
-              <option value="high">Price High → Low</option>
-              <option value="rating">Highest Rated</option>
-            </select>
+            <input
+              type="text"
+              placeholder="Search Products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white w-64"
+            />
           </div>
 
           {loading ? (
@@ -284,11 +342,57 @@ const Shop = () => {
               </h2>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                {paginatedProducts.map((product) => (
+                  <ProductCard key={product._id} product={product} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-xl bg-zinc-900 border border-white/5 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-orange-500/40"
+                  >
+                    Prev
+                  </button>
+
+                  {getPageNumbers().map((page, idx) =>
+                    page === "..." ? (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-3 py-2 text-zinc-500"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        className={`px-4 py-2 rounded-xl border transition ${
+                          currentPage === page
+                            ? "bg-orange-500 border-orange-500 text-white"
+                            : "bg-zinc-900 border-white/5 text-zinc-300 hover:border-orange-500/40"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-xl bg-zinc-900 border border-white/5 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-orange-500/40"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

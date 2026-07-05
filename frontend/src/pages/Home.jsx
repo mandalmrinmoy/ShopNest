@@ -50,7 +50,7 @@ const Home = () => {
             repeat: Infinity,
             ease: "linear",
           }}
-          className="absolute inset-[-50%]"
+          className="absolute inset-[-50%] pointer-events-none"
           style={{
             background:
               "conic-gradient(from 0deg, transparent, rgba(249,115,22,1), transparent 30%)",
@@ -58,10 +58,10 @@ const Home = () => {
         />
 
         {/* Hero Content */}
-        <section className="relative rounded-3xl bg-zinc-950 px-8 md:px-12 py-24 text-center overflow-hidden border border-orange-500/10">
+        <section className="relative z-10 rounded-3xl bg-zinc-950 px-8 md:px-12 py-24 text-center overflow-hidden border border-orange-500/10">
           {/* Glow Effects */}
-          <div className="absolute top-0 left-0 h-80 w-80 bg-orange-500/10 blur-[120px] rounded-full" />
-          <div className="absolute bottom-0 right-0 h-80 w-80 bg-orange-500/10 blur-[120px] rounded-full" />
+          <div className="absolute top-0 left-0 h-80 w-80 bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 right-0 h-80 w-80 bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -85,14 +85,13 @@ const Home = () => {
             experience.
           </motion.p>
 
-          <Link to={"/shop"}>
+          <Link
+            to="/shop"
+            className="relative z-20 inline-block"
+          >
             <motion.button
-              whileHover={{
-                scale: 1.05,
-              }}
-              whileTap={{
-                scale: 0.95,
-              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-orange-500/20 cursor-pointer"
             >
               Shop Now
@@ -129,7 +128,6 @@ const Home = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {" "}
             {products.map((product) => (
               <motion.div
                 key={product._id}
@@ -143,6 +141,7 @@ const Home = () => {
           </div>
         )}
       </motion.div>
+
       <div className="flex justify-center mt-12">
         <Link to="/shop">
           <motion.button

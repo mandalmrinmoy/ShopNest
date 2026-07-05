@@ -58,23 +58,19 @@ const createOrder = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     // Send email
-    await sendEmail({
-      to: user.email,
-      subject: "Order Placed Successfully",
-      text: `
-Hello ${user.name},
+    await sendEmail(
+      user.email,
+      "Order Placed Successfully",
+      `Hello ${user.name}, Your order has been placed successfully.
+        Order ID: ${createdOrder._id}
+        Payment ID: ${paymentId}
+        Total Amount: ₹${grandTotal}
+        
+        Status: Pending
 
-Your order has been placed successfully.
-
-Order ID: ${createdOrder._id}
-Payment ID: ${paymentId}
-Total Amount: ₹${grandTotal}
-
-Status: Pending
-
-Thank you for shopping with us.
-      `,
-    });
+        Thank you for shopping with us.
+`,
+    );
 
     res.status(201).json(createdOrder);
   } catch (error) {
@@ -132,13 +128,13 @@ const updateOrderStatus = async (req, res) => {
     const updatedOrder = await order.save();
 
     // Send status update email
-    await sendEmail({
-      to: order.user.email,
-      subject: "Order Status Updated",
-      text: `Hello ${order.user.name},
-            Your order status has been updated.Order ID: ${order._id}
-            New Status: ${order.status}Thank you for shopping with us.`,
-    });
+    await sendEmail(
+      order.user.email,
+      "Order Status Updated",
+      `Hello ${order.user.name},Your order status has been updated.
+      Order ID: ${order._id} New Status: ${order.status}
+      Thank you for shopping with us.`,
+    );
 
     res.status(200).json(updatedOrder);
   } catch (error) {

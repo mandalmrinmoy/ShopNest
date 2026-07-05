@@ -3,51 +3,53 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
-    });
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      toast.success(
-        "Registration Successful! Please check your email for the Welcome OTP."
-      );
+      if (res.ok) {
+        toast.success(
+          "Registration Successful! Please check your email for the Welcome OTP.",
+        );
 
-      login(data);
+        login(data);
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
-    } else {
-      toast.error(data.message || "Registration Failed");
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else {
+        toast.error(data.message || "Registration Failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong");
-  }
-};
+  };
 
   return (
     <div className="flex justify-center items-center min-h-[80vh] px-5">
@@ -109,14 +111,24 @@ const Register = () => {
             className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition"
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 pr-12 text-white outline-none focus:border-orange-500 transition"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-orange-500 transition"
+            >
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -127,10 +139,7 @@ const Register = () => {
 
           <p className="text-center text-zinc-400">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-orange-500 hover:text-orange-400"
-            >
+            <Link to="/login" className="text-orange-500 hover:text-orange-400">
               Login
             </Link>
           </p>

@@ -34,42 +34,47 @@ const Checkout = () => {
   const totalPrice = subtotal + shippingCost;
 
   const bypassPayment = async () => {
-    try {
-      const saveOrderRes = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({
-          orderItems: cartItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.qty,
-          })),
-          shippingAddress: address,
-          paymentId: "bypass_" + Date.now(),
-        }),
-      });
+  try {
+    setLoading(true);
 
-      const data = await saveOrderRes.json();
+    const saveOrderRes = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.token}`,
+      },
+      body: JSON.stringify({
+        orderItems: cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.qty,
+        })),
+        shippingAddress: address,
+        paymentId: "bypass_" + Date.now(),
+      }),
+    });
 
-      console.log("ORDER RESPONSE:", data);
+    const data = await saveOrderRes.json();
 
-      if (saveOrderRes.ok) {
-  toast.success("Order placed successfully!");
+    console.log("ORDER RESPONSE:", data);
 
-  dispatch(clearCart());
+    if (saveOrderRes.ok) {
+      toast.success("Order placed successfully!");
 
-  setTimeout(() => {
-    navigate("/ordersuccess");
-  }, 1000);
-} else {
-        toast.error(data.message || "Order saving failed");
-      }
-    } catch (error) {
-      console.error(error);
+      dispatch(clearCart());
+
+      setTimeout(() => {
+        navigate("/ordersuccess");
+      }, 1000);
+    } else {
+      toast.error(data.message || "Order saving failed");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handlePayment = async () => {
     try {
@@ -376,9 +381,16 @@ const Checkout = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-semibold text-lg hover:scale-[1.02] transition disabled:opacity-50"
+              className="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-semibold text-lg hover:scale-[1.02] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
-              {loading ? "Processing..." : "Place Order"}
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Processing Order...
+                </>
+              ) : (
+                "Place Order"
+              )}
             </button>
 
             <p className="text-center text-zinc-500 text-xs mt-4">

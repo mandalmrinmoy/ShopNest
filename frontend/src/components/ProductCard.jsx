@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 
 const ProductCard = ({ product }) => {
   return (
+    <Link to={`/product/${product._id}`}>
     <motion.div
       whileHover={{
         y: -8,
@@ -59,6 +60,7 @@ const ProductCard = ({ product }) => {
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 };
 
