@@ -31,10 +31,10 @@ app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/build')));
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
   
   app.use((req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend/build/index.html'));
+    res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
   });
 } else {
   app.get('/', (req, res) => {
