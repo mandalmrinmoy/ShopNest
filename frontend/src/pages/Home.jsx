@@ -38,7 +38,7 @@ const Home = () => {
       transition={{
         duration: 0.8,
       }}
-      className="max-w-5xl mx-auto px-5 py-10"
+      className="max-w-5xl mx-auto px-5 py-10 mt-20"
     >
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-3xl p-[2px] mb-20">

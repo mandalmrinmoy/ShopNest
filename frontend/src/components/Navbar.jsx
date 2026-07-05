@@ -13,25 +13,18 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-  setMenuOpen(false);
-  logout();
-  navigate("/login");
-};
-  const totalItems = cartItems.reduce(
-  (acc, item) => acc + item.qty,
-  0
-);
+    setMenuOpen(false);
+    logout();
+    navigate("/login");
+  };
+  const totalItems = cartItems.reduce((acc, item) => acc + item.qty, 0);
 
   return (
-<nav className="fixed top-0 left-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">      <div className="max-w-7xl mx-auto px-5">
-
+    <nav className="fixed top-0 left-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-5">
         <div className="h-20 flex items-center justify-between">
-
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center gap-3"
-          >
+          <Link to="/" className="flex items-center gap-3">
             {/* <img
               src="/ShopNestLogo.png"
               alt="ShopNest"
@@ -46,7 +39,6 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <ul className="hidden md:flex items-center gap-8">
-
             <li>
               <Link
                 to="/"
@@ -145,9 +137,7 @@ const Navbar = () => {
             className="md:hidden pb-5"
           >
             <div className="bg-zinc-900 border border-white/5 rounded-2xl p-4">
-
               <div className="flex flex-col gap-4">
-
                 <Link
                   to="/"
                   onClick={() => setMenuOpen(false)}
@@ -208,7 +198,6 @@ const Navbar = () => {
                     Login
                   </Link>
                 )}
-
               </div>
             </div>
           </motion.div>
