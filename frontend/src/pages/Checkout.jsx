@@ -30,7 +30,7 @@ const Checkout = () => {
     0,
   );
 
-  const shippingCost = subtotal > 999 ? 0 : 99;
+  const shippingCost = subtotal > 500 ? 0 : 99;
   const totalPrice = subtotal + shippingCost;
 
   const bypassPayment = async () => {
@@ -340,7 +340,7 @@ const Checkout = () => {
                 <img
                   src={item.imageUrl}
                   alt={item.name}
-                  className="w-16 h-16 rounded-xl object-cover"
+                  className="w-16 h-16 rounded-xl object-contain"
                 />
 
                 <div className="flex-1">

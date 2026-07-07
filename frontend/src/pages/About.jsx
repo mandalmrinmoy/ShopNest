@@ -9,7 +9,7 @@ const About = () => {
         <img
           src={photo}
           alt="Profile"
-          className="w-44 h-44 mx-auto rounded-full object-cover border-4 border-orange-500 shadow-[0_4px_20px_rgba(249,115,22,0.4)] mb-6"
+          className="w-44 h-44 mx-auto rounded-full object-contain border-4 border-orange-500 shadow-[0_4px_20px_rgba(249,115,22,0.4)] mb-6"
         />
 
         {/* Heading */}

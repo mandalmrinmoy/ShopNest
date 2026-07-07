@@ -37,18 +37,18 @@ const Cart = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-5 py-20 text-center mt-10">
-        <h1 className="text-4xl font-bold text-white mb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-5 py-14 sm:py-20 text-center mt-8 sm:mt-10">
+        <h1 className="text-2xl sm:text-4xl font-bold text-white mb-4">
           Your Cart is Empty 🛒
         </h1>
 
-        <p className="text-zinc-400 mb-8">
+        <p className="text-sm sm:text-base text-zinc-400 mb-8">
           Looks like you haven't added any products yet.
         </p>
 
         <Link
           to="/shop"
-          className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 rounded-xl text-white font-semibold"
+          className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl text-white text-sm sm:text-base font-semibold"
         >
           Continue Shopping
         </Link>
@@ -69,16 +69,16 @@ const Cart = () => {
       transition={{
         duration: 0.5,
       }}
-      className="max-w-7xl mx-auto px-5 py-10 mt-15"
+      className="max-w-7xl mx-auto px-4 sm:px-5 py-8 sm:py-10 mt-10 sm:mt-15"
     >
-      <h1 className="text-4xl font-bold text-white mb-10">
+      <h1 className="text-2xl sm:text-4xl font-bold text-white mb-6 sm:mb-10">
         Shopping Cart
       </h1>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
 
         {/* Cart Items */}
-        <div className="lg:col-span-2 flex flex-col gap-5">
+        <div className="lg:col-span-2 flex flex-col gap-4 sm:gap-5">
 
           {cartItems.map((item) => (
             <motion.div
@@ -86,36 +86,36 @@ const Cart = () => {
               whileHover={{
                 x: 5,
               }}
-              className="bg-zinc-900 border border-white/5 rounded-2xl p-5 flex flex-col md:flex-row gap-5"
+              className="bg-zinc-900 border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5"
             >
               <img
                 src={item.imageUrl}
                 alt={item.name}
-                className="w-full md:w-36 h-36 object-contain rounded-xl"
+                className="w-full sm:w-36 h-44 sm:h-36 object-contain rounded-xl"
               />
 
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <h3 className="text-base sm:text-xl font-semibold text-white mb-2">
                   {item.name}
                 </h3>
 
-                <p className="text-orange-500 font-bold text-lg mb-4">
+                <p className="text-orange-500 font-bold text-base sm:text-lg mb-4">
                   ₹{item.price}
                 </p>
 
                 {/* Quantity Controls */}
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 sm:gap-3 mb-4">
 
                   <button
                     onClick={() =>
                       handleUpdateQty(item, item.qty - 1)
                     }
-                    className="h-9 w-9 rounded-lg bg-zinc-800 text-white hover:bg-orange-500 transition"
+                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-zinc-800 text-white hover:bg-orange-500 transition text-sm sm:text-base"
                   >
                     -
                   </button>
 
-                  <span className="text-white font-semibold">
+                  <span className="text-white font-semibold text-sm sm:text-base">
                     {item.qty}
                   </span>
 
@@ -123,7 +123,7 @@ const Cart = () => {
                     onClick={() =>
                       handleUpdateQty(item, item.qty + 1)
                     }
-                    className="h-9 w-9 rounded-lg bg-zinc-800 text-white hover:bg-orange-500 transition"
+                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-zinc-800 text-white hover:bg-orange-500 transition text-sm sm:text-base"
                   >
                     +
                   </button>
@@ -134,7 +134,7 @@ const Cart = () => {
                   onClick={() =>
                     handleRemove(item.productId)
                   }
-                  className="bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white transition"
+                  className="bg-red-500/10 border border-red-500/30 text-red-500 text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-500 hover:text-white transition"
                 >
                   Remove
                 </button>
@@ -145,28 +145,28 @@ const Cart = () => {
         </div>
 
         {/* Summary */}
-        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6 h-fit sticky top-24">
+        <div className="bg-zinc-900 border border-white/5 rounded-xl sm:rounded-2xl p-5 sm:p-6 h-fit lg:sticky lg:top-24">
 
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-5 sm:mb-6">
             Order Summary
           </h2>
 
-          <div className="flex justify-between text-zinc-400 mb-3">
+          <div className="flex justify-between text-sm sm:text-base text-zinc-400 mb-3">
             <span>Total Items</span>
             <span>{totalItems}</span>
           </div>
 
-          <div className="flex justify-between text-zinc-400 mb-6">
+          <div className="flex justify-between text-sm sm:text-base text-zinc-400 mb-6">
             <span>Total Price</span>
 
-            <span className="text-orange-500 font-bold text-xl">
+            <span className="text-orange-500 font-bold text-lg sm:text-xl">
               ₹{totalPrice.toFixed(2)}
             </span>
           </div>
 
           <button
             onClick={() => navigate("/checkout")}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-semibold hover:scale-[1.02] transition"
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 sm:py-4 text-sm sm:text-base rounded-xl font-semibold hover:scale-[1.02] transition"
           >
             Proceed to Checkout
           </button>

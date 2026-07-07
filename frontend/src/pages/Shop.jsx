@@ -14,6 +14,7 @@ const Shop = () => {
   const [rating, setRating] = useState("");
   const [sort, setSort] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
   const categories = [
     { icon: "🔥", name: "All" },
@@ -151,13 +152,122 @@ const Shop = () => {
     return pages;
   };
 
+  // Shared filter panel content, reused for desktop sidebar and mobile drawer
+  const FilterPanel = () => (
+    <>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-white">Filters</h2>
+
+        <button
+          onClick={clearFilters}
+          className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-2 rounded-lg cursor-pointer"
+        >
+          Clear
+        </button>
+      </div>
+
+      <h3 className="text-white font-semibold mb-4">Sort By</h3>
+
+      <div className="space-y-3 text-zinc-300 mb-4 text-sm sm:text-base">
+        {sortOptions.map((option) => (
+          <label key={option.value} className="flex gap-2">
+            <input
+              type="checkbox"
+              checked={sort === option.value}
+              onChange={() => setSort(option.value)}
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+
+      <h3 className="text-white font-semibold mb-4">Price Range</h3>
+
+      <div className="space-y-3 text-zinc-300 mb-8 text-sm sm:text-base">
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="price"
+            checked={priceRange === "0-10000"}
+            onChange={() => setPriceRange("0-10000")}
+          />
+          ₹0 - ₹10,000
+        </label>
+
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="price"
+            checked={priceRange === "10000-50000"}
+            onChange={() => setPriceRange("10000-50000")}
+          />
+          ₹10,000 - ₹50,000
+        </label>
+
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="price"
+            checked={priceRange === "50000-100000"}
+            onChange={() => setPriceRange("50000-100000")}
+          />
+          ₹50,000 - ₹1,00,000
+        </label>
+
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="price"
+            checked={priceRange === "100000+"}
+            onChange={() => setPriceRange("100000+")}
+          />
+          ₹1,00,000+
+        </label>
+      </div>
+
+      <h3 className="text-white font-semibold mb-4">Rating</h3>
+
+      <div className="space-y-3 text-zinc-300 mb-2 text-sm sm:text-base">
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="rating"
+            checked={rating === 4}
+            onChange={() => setRating(4)}
+          />
+          ⭐ 4 & Above
+        </label>
+
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="rating"
+            checked={rating === 3}
+            onChange={() => setRating(3)}
+          />
+          ⭐ 3 & Above
+        </label>
+
+        <label className="flex gap-2">
+          <input
+            type="radio"
+            name="rating"
+            checked={rating === 2}
+            onChange={() => setRating(2)}
+          />
+          ⭐ 2 & Above
+        </label>
+      </div>
+    </>
+  );
+
   return (
-    <div className="w-full max-w-[1920px] mx-auto px-8 py-10 pt-28">
+    <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 pt-24 sm:pt-28">
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative h-[380px] rounded-3xl overflow-hidden mb-10"
+        className="relative h-[220px] sm:h-[300px] md:h-[380px] rounded-2xl sm:rounded-3xl overflow-hidden mb-6 sm:mb-10"
       >
         <img
           src="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
@@ -167,154 +277,90 @@ const Shop = () => {
 
         <div className="absolute inset-0 bg-black/60" />
 
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-5">
-          <h1 className="text-6xl md:text-7xl font-bold text-white">
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 sm:px-5">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white">
             Shop Collection
           </h1>
 
-          <p className="text-zinc-300 mt-4 max-w-2xl text-lg">
+          <p className="text-zinc-300 mt-3 sm:mt-4 max-w-2xl text-sm sm:text-lg">
             Explore premium smartphones, laptops, gaming gear and accessories.
           </p>
         </div>
       </motion.div>
 
       {/* Categories */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 mb-6 sm:mb-10">
         {categories.map((item) => (
           <motion.button
             key={item.name}
             whileHover={{ y: -5 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setCategory(item.name)}
-            className={`p-5 rounded-2xl border cursor-pointer transition ${
+            className={`p-3 sm:p-5 rounded-xl sm:rounded-2xl border cursor-pointer transition ${
               category === item.name
                 ? "bg-orange-500 border-orange-500 text-white"
                 : "bg-zinc-900 border-white/5 text-zinc-300 hover:border-orange-500/40"
             }`}
           >
-            <div className="text-4xl mb-2">{item.icon}</div>
+            <div className="text-2xl sm:text-4xl mb-1 sm:mb-2">{item.icon}</div>
 
-            <p className="text-sm font-medium">{item.name}</p>
+            <p className="text-xs sm:text-sm font-medium">{item.name}</p>
           </motion.button>
         ))}
       </div>
 
-      {/* Main Layout */}
-      <div className="grid lg:grid-cols-[320px_1fr] gap-8">
-        {/* Sidebar */}
-        <div className="hidden lg:block bg-zinc-900 border border-white/5 rounded-3xl p-6 sticky top-24 self-start">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Filters</h2>
+      {/* Mobile filter toggle */}
+      <button
+        onClick={() => setShowFilters(true)}
+        className="lg:hidden w-full mb-6 flex items-center justify-center gap-2 bg-zinc-900 border border-white/5 text-white text-sm font-medium px-4 py-3 rounded-xl"
+      >
+        Filters & Sort
+      </button>
+
+      {/* Mobile filter drawer */}
+      {showFilters && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setShowFilters(false)}
+          />
+
+          <div className="absolute right-0 top-0 h-full w-[85%] max-w-sm bg-zinc-950 border-l border-white/5 p-5 overflow-y-auto">
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-zinc-400 hover:text-white text-sm px-3 py-2"
+              >
+                Close ✕
+              </button>
+            </div>
+
+            <FilterPanel />
 
             <button
-              onClick={clearFilters}
-              className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-2 rounded-lg cursor-pointer"
+              onClick={() => setShowFilters(false)}
+              className="w-full mt-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-semibold text-sm"
             >
-              Clear
+              Show Results
             </button>
           </div>
+        </div>
+      )}
 
-          <h3 className="text-white font-semibold mb-4">Sort By</h3>
-
-          <div className="space-y-3 text-zinc-300 mb-4">
-            {sortOptions.map((option) => (
-              <label key={option.value} className="flex gap-2">
-                <input
-                  type="checkbox"
-                  checked={sort === option.value}
-                  onChange={() => setSort(option.value)}
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-
-          <h3 className="text-white font-semibold mb-4">Price Range</h3>
-
-          <div className="space-y-3 text-zinc-300 mb-8">
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="price"
-                checked={priceRange === "0-10000"}
-                onChange={() => setPriceRange("0-10000")}
-              />
-              ₹0 - ₹10,000
-            </label>
-
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="price"
-                checked={priceRange === "10000-50000"}
-                onChange={() => setPriceRange("10000-50000")}
-              />
-              ₹10,000 - ₹50,000
-            </label>
-
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="price"
-                checked={priceRange === "50000-100000"}
-                onChange={() => setPriceRange("50000-100000")}
-              />
-              ₹50,000 - ₹1,00,000
-            </label>
-
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="price"
-                checked={priceRange === "100000+"}
-                onChange={() => setPriceRange("100000+")}
-              />
-              ₹1,00,000+
-            </label>
-          </div>
-
-          <h3 className="text-white font-semibold mb-4">Rating</h3>
-
-          <div className="space-y-3 text-zinc-300 mb-8">
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="rating"
-                checked={rating === 4}
-                onChange={() => setRating(4)}
-              />
-              ⭐ 4 & Above
-            </label>
-
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="rating"
-                checked={rating === 3}
-                onChange={() => setRating(3)}
-              />
-              ⭐ 3 & Above
-            </label>
-
-            <label className="flex gap-2">
-              <input
-                type="radio"
-                name="rating"
-                checked={rating === 2}
-                onChange={() => setRating(2)}
-              />
-              ⭐ 2 & Above
-            </label>
-          </div>
+      {/* Main Layout */}
+      <div className="grid lg:grid-cols-[320px_1fr] gap-6 sm:gap-8">
+        {/* Sidebar (desktop only) */}
+        <div className="hidden lg:block bg-zinc-900 border border-white/5 rounded-3xl p-6 sticky top-24 self-start">
+          <FilterPanel />
         </div>
 
         {/* Products */}
         <div>
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-white">Products</h2>
+              <h2 className="text-xl sm:text-3xl font-bold text-white">Products</h2>
 
-              <p className="text-zinc-400">
+              <p className="text-sm sm:text-base text-zinc-400">
                 Showing {filteredProducts.length === 0 ? 0 : (currentPage - 1) * PRODUCTS_PER_PAGE + 1}
                 {"–"}
                 {Math.min(currentPage * PRODUCTS_PER_PAGE, filteredProducts.length)} of{" "}
@@ -327,7 +373,7 @@ const Shop = () => {
               placeholder="Search Products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white w-64"
+              className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white w-full sm:w-64"
             />
           </div>
 
@@ -336,14 +382,14 @@ const Shop = () => {
               <div className="h-12 w-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="bg-zinc-900 rounded-3xl min-h-[400px] flex items-center justify-center">
-              <h2 className="text-white text-3xl font-bold">
+            <div className="bg-zinc-900 rounded-2xl sm:rounded-3xl min-h-[300px] sm:min-h-[400px] flex items-center justify-center px-4 text-center">
+              <h2 className="text-white text-xl sm:text-3xl font-bold">
                 No Products Found
               </h2>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 {paginatedProducts.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
@@ -351,11 +397,11 @@ const Shop = () => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">
+                <div className="flex justify-center items-center gap-2 mt-8 sm:mt-10 flex-wrap">
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-xl bg-zinc-900 border border-white/5 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-orange-500/40"
+                    className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-xl bg-zinc-900 border border-white/5 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-orange-500/40"
                   >
                     Prev
                   </button>
@@ -364,7 +410,7 @@ const Shop = () => {
                     page === "..." ? (
                       <span
                         key={`ellipsis-${idx}`}
-                        className="px-3 py-2 text-zinc-500"
+                        className="px-2 sm:px-3 py-2 text-zinc-500"
                       >
                         ...
                       </span>
@@ -372,7 +418,7 @@ const Shop = () => {
                       <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className={`px-4 py-2 rounded-xl border transition ${
+                        className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-xl border transition ${
                           currentPage === page
                             ? "bg-orange-500 border-orange-500 text-white"
                             : "bg-zinc-900 border-white/5 text-zinc-300 hover:border-orange-500/40"
@@ -386,7 +432,7 @@ const Shop = () => {
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-xl bg-zinc-900 border border-white/5 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-orange-500/40"
+                    className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-xl bg-zinc-900 border border-white/5 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-orange-500/40"
                   >
                     Next
                   </button>

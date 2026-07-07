@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
@@ -17,23 +12,19 @@ const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Category filter state
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Pagination state
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // Fetch products on mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await fetch("/api/products");
         const data = await res.json();
-
-        setProducts(
-          Array.isArray(data) ? data : []
-        );
+        setProducts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load products");
@@ -45,30 +36,25 @@ const AdminProducts = () => {
     fetchProducts();
   }, []);
 
-  // Close the category dropdown when clicking outside of it
+  // Close category dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowCategoryDropdown(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Unique list of categories derived from the products
-  const categories = [
-    ...new Set(products.map((product) => product.category)),
-  ].filter(Boolean);
+  const categories = useMemo(
+    () => [...new Set(products.map((p) => p.category))].filter(Boolean),
+    [products]
+  );
 
   const allSelected =
-    categories.length > 0 &&
-    selectedCategories.length === categories.length;
+    categories.length > 0 && selectedCategories.length === categories.length;
 
   const handleToggleCategory = (category) => {
     setSelectedCategories((prev) =>
@@ -76,58 +62,47 @@ const AdminProducts = () => {
         ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
-    setVisibleCount(PAGE_SIZE); // reset pagination whenever filter changes
+    setCurrentPage(1);
   };
 
   const handleToggleAll = () => {
     setSelectedCategories(allSelected ? [] : categories);
-    setVisibleCount(PAGE_SIZE);
+    setCurrentPage(1);
   };
 
-  // Products after applying the category filter
-  const filteredProducts =
-    selectedCategories.length === 0
-      ? products
-      : products.filter((product) =>
-          selectedCategories.includes(product.category)
-        );
+  const filteredProducts = useMemo(() => {
+    if (selectedCategories.length === 0) return products;
+    return products.filter((p) => selectedCategories.includes(p.category));
+  }, [products, selectedCategories]);
 
-  // Only show `visibleCount` products at a time
-  const visibleProducts = filteredProducts.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredProducts.length;
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
 
-  const handleViewAll = () => {
-    setVisibleCount((prev) => prev + PAGE_SIZE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const goToPage = (page) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages));
   };
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this product?"
     );
-
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(
-        `/api/products/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
       if (res.ok) {
-        setProducts(
-          products.filter(
-            (product) => product._id !== id
-          )
-        );
-
-        toast.success(
-          "Product deleted successfully"
-        );
+        setProducts((prev) => prev.filter((p) => p._id !== id));
+        toast.success("Product deleted successfully");
       } else {
         toast.error("Failed to delete");
       }
@@ -139,87 +114,74 @@ const AdminProducts = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="h-12 w-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
       </div>
     );
   }
 
   return (
     <motion.div
-      initial={{
-        opacity: 0,
-        y: 20,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      className="max-w-7xl mx-auto px-5 py-10 mt-15"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-auto mt-10 max-w-7xl px-4 py-8 sm:mt-14 sm:px-6 sm:py-10"
     >
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+      <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-white sm:text-4xl">
             Manage Products
           </h1>
-
-          <p className="text-zinc-400 mt-2">
+          <p className="mt-1 text-sm text-zinc-400 sm:mt-2 sm:text-base">
             View, edit and delete products
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
           {/* Category filter dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
-              onClick={() =>
-                setShowCategoryDropdown((prev) => !prev)
-              }
-              className="bg-zinc-900 border border-white/10 text-white px-5 py-3 rounded-xl font-medium hover:bg-zinc-800 transition flex items-center gap-2 cursor-pointer"
+              onClick={() => setShowCategoryDropdown((prev) => !prev)}
+              className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 sm:px-5 sm:py-3 sm:text-base"
             >
               Select Categories
               {selectedCategories.length > 0 && (
-                <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">
                   {selectedCategories.length}
                 </span>
               )}
             </button>
 
             {showCategoryDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-zinc-900 border border-white/10 rounded-2xl shadow-xl z-20 p-4">
-                <label className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-zinc-800 cursor-pointer">
+              <div className="absolute right-0 z-20 mt-2 w-64 max-w-[80vw] rounded-xl border border-white/10 bg-zinc-900 p-3 shadow-xl sm:rounded-2xl sm:p-4">
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-zinc-800">
                   <input
                     type="checkbox"
                     checked={allSelected}
                     onChange={handleToggleAll}
-                    className="w-4 h-4 accent-orange-500 cursor-pointer"
+                    className="h-4 w-4 cursor-pointer accent-orange-500"
                   />
-                  <span className="text-white font-semibold">
+                  <span className="text-sm font-semibold text-white sm:text-base">
                     All
                   </span>
                 </label>
 
-                <div className="border-t border-white/5 my-2"></div>
+                <div className="my-2 border-t border-white/5" />
 
-                <div className="max-h-60 overflow-y-auto flex flex-col gap-1">
+                <div className="flex max-h-60 flex-col gap-1 overflow-y-auto">
                   {categories.map((category) => (
                     <label
                       key={category}
-                      className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-zinc-800 cursor-pointer"
+                      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-zinc-800"
                     >
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes(
-                          category
-                        )}
-                        onChange={() =>
-                          handleToggleCategory(category)
-                        }
-                        className="w-4 h-4 accent-orange-500 cursor-pointer"
+                        checked={selectedCategories.includes(category)}
+                        onChange={() => handleToggleCategory(category)}
+                        className="h-4 w-4 cursor-pointer accent-orange-500"
                       />
-                      <span className="text-zinc-200">
+                      <span className="text-sm text-zinc-200 sm:text-base">
                         {category}
                       </span>
                     </label>
@@ -231,7 +193,7 @@ const AdminProducts = () => {
 
           <Link
             to="/admin/add-product"
-            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:scale-105 transition text-center"
+            className="rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:scale-105 sm:px-6 sm:py-3 sm:text-base"
           >
             + Add Product
           </Link>
@@ -239,52 +201,33 @@ const AdminProducts = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid md:grid-cols-3 gap-5 mb-8">
-
-        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6">
-          <p className="text-zinc-400">
-            Total Products
-          </p>
-
-          <h2 className="text-3xl font-bold text-orange-500 mt-2">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:grid-cols-3 sm:gap-5">
+        <div className="col-span-2 rounded-xl border border-white/5 bg-zinc-900 p-4 sm:col-span-1 sm:rounded-2xl sm:p-6">
+          <p className="text-sm text-zinc-400 sm:text-base">Total Products</p>
+          <h2 className="mt-1 text-2xl font-bold text-orange-500 sm:mt-2 sm:text-3xl">
             {products.length}
           </h2>
         </div>
 
-        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6">
-          <p className="text-zinc-400">
-            Categories
-          </p>
-
-          <h2 className="text-3xl font-bold text-blue-500 mt-2">
+        <div className="rounded-xl border border-white/5 bg-zinc-900 p-4 sm:rounded-2xl sm:p-6">
+          <p className="text-sm text-zinc-400 sm:text-base">Categories</p>
+          <h2 className="mt-1 text-2xl font-bold text-blue-500 sm:mt-2 sm:text-3xl">
             {categories.length}
           </h2>
         </div>
 
-        <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6">
-          <p className="text-zinc-400">
-            Total Stock
-          </p>
-
-          <h2 className="text-3xl font-bold text-emerald-500 mt-2">
-            {products.reduce(
-              (acc, product) =>
-                acc + product.stock,
-              0
-            )}
+        <div className="rounded-xl border border-white/5 bg-zinc-900 p-4 sm:rounded-2xl sm:p-6">
+          <p className="text-sm text-zinc-400 sm:text-base">Total Stock</p>
+          <h2 className="mt-1 text-2xl font-bold text-emerald-500 sm:mt-2 sm:text-3xl">
+            {products.reduce((acc, p) => acc + p.stock, 0)}
           </h2>
         </div>
-
       </div>
 
-      {/* Products Table */}
-      <div className="bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden">
-
+      {/* Products table */}
+      <div className="overflow-hidden rounded-2xl border border-white/5 bg-zinc-900 sm:rounded-3xl">
         <div className="overflow-x-auto">
-          <table
-            className="w-full min-w-[900px]"
-            style={{ tableLayout: "fixed" }}
-          >
+          <table className="w-full min-w-[900px]" style={{ tableLayout: "fixed" }}>
             <colgroup>
               <col style={{ width: "12%" }} />
               <col style={{ width: "28%" }} />
@@ -295,75 +238,59 @@ const AdminProducts = () => {
             </colgroup>
 
             <thead>
-              <tr className="bg-zinc-950 border-b border-white/5">
-                <th className="p-5 text-left text-zinc-400">
-                  Image
-                </th>
-
-                <th className="p-5 text-left text-zinc-400">
-                  Product
-                </th>
-
-                <th className="p-5 text-left text-zinc-400">
-                  Price
-                </th>
-
-                <th className="p-5 text-left text-zinc-400">
-                  Category
-                </th>
-
-                <th className="p-5 text-left text-zinc-400">
-                  Stock
-                </th>
-
-                <th className="p-5 text-left text-zinc-400">
-                  Actions
-                </th>
+              <tr className="border-b border-white/5 bg-zinc-950">
+                {["Image", "Product", "Price", "Category", "Stock", "Actions"].map(
+                  (heading) => (
+                    <th
+                      key={heading}
+                      className="p-4 text-left text-sm text-zinc-400 sm:p-5 sm:text-base"
+                    >
+                      {heading}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
 
             <tbody>
-              {visibleProducts.length === 0 ? (
+              {paginatedProducts.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="p-8 text-center text-zinc-400"
+                    className="p-8 text-center text-sm text-zinc-400 sm:text-base"
                   >
                     No products found
                   </td>
                 </tr>
               ) : (
-                visibleProducts.map((product) => (
+                paginatedProducts.map((product) => (
                   <tr
                     key={product._id}
-                    className="border-b border-white/5 hover:bg-zinc-800/30 transition"
+                    className="border-b border-white/5 transition hover:bg-zinc-800/30"
                   >
-                    <td className="p-5">
+                    <td className="p-4 sm:p-5">
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="w-16 h-16 rounded-xl object-cover"
+                        className="h-14 w-14 rounded-xl object-contain sm:h-16 sm:w-16"
                       />
                     </td>
 
-                    <td className="p-5 text-white font-medium">
+                    <td className="p-4 text-sm font-medium text-white sm:p-5 sm:text-base">
                       {product.name}
                     </td>
 
-                    <td className="p-5 text-orange-500 font-semibold">
-                      ₹
-                      {product.price.toFixed(
-                        2
-                      )}
+                    <td className="p-4 text-sm font-semibold text-orange-500 sm:p-5 sm:text-base">
+                      ₹{product.price.toFixed(2)}
                     </td>
 
-                    <td className="p-5 text-zinc-300">
+                    <td className="p-4 text-sm text-zinc-300 sm:p-5 sm:text-base">
                       {product.category}
                     </td>
 
-                    <td className="p-5">
+                    <td className="p-4 sm:p-5">
                       <span
-                        className={`px-3 py-2 rounded-xl text-sm font-semibold ${
+                        className={`rounded-xl px-2.5 py-1.5 text-xs font-semibold sm:px-3 sm:py-2 sm:text-sm ${
                           product.stock > 0
                             ? "bg-emerald-500/10 text-emerald-500"
                             : "bg-red-500/10 text-red-500"
@@ -373,51 +300,64 @@ const AdminProducts = () => {
                       </span>
                     </td>
 
-                    <td className="p-5">
-                      <div className="flex gap-3">
-
+                    <td className="p-4 sm:p-5">
+                      <div className="flex gap-2 sm:gap-3">
                         <Link
                           to={`/admin/edit-product/${product._id}`}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition"
+                          className="rounded-xl bg-blue-500 px-3 py-2 text-xs font-medium text-white transition hover:bg-blue-600 sm:px-4 sm:text-sm"
                         >
                           Edit
                         </Link>
 
                         <button
-                          onClick={() =>
-                            handleDelete(
-                              product._id
-                            )
-                          }
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer"
+                          onClick={() => handleDelete(product._id)}
+                          className="cursor-pointer rounded-xl bg-red-500 px-3 py-2 text-xs font-medium text-white transition hover:bg-red-600 sm:px-4 sm:text-sm"
                         >
                           Delete
                         </button>
-
                       </div>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
-
           </table>
         </div>
 
-        {/* View All / Load more */}
-        {hasMore && (
-          <div className="flex justify-center py-6 border-t border-white/5">
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/5 px-4 py-6">
             <button
-              type="button"
-              onClick={handleViewAll}
-              className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-semibold transition cursor-pointer"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="rounded-xl border border-white/5 bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-orange-500/40 disabled:cursor-not-allowed disabled:opacity-40 sm:text-base"
             >
-              View All ({visibleProducts.length} of{" "}
-              {filteredProducts.length})
+              Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => goToPage(page)}
+                className={`rounded-xl border px-4 py-2 text-sm transition sm:text-base ${
+                  currentPage === page
+                    ? "border-orange-500 bg-orange-500 text-white"
+                    : "border-white/5 bg-zinc-800 text-zinc-300 hover:border-orange-500/40"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="rounded-xl border border-white/5 bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-orange-500/40 disabled:cursor-not-allowed disabled:opacity-40 sm:text-base"
+            >
+              Next
             </button>
           </div>
         )}
-
       </div>
     </motion.div>
   );
