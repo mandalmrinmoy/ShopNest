@@ -209,7 +209,7 @@ const Checkout = () => {
         opacity: 1,
         y: 0,
       }}
-      className="max-w-7xl mx-auto px-5 py-10"
+      className="max-w-7xl mx-auto px-5 py-10 mt-15"
     >
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-white">Checkout</h1>

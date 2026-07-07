@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { AuthContext } from "../context/AuthContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -10,6 +11,14 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const toastStyle = {
+    style: {
+      background: "#18181b",
+      color: "#fff",
+      border: "1px solid #f97316",
+    },
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,12 +39,27 @@ const Login = () => {
 
       if (res.ok) {
         login(data);
+        toast.success(`Welcome back, ${data.name}!`, {
+          position: "top-center",
+          ...toastStyle,
+          iconTheme: {
+            primary: "#f97316",
+            secondary: "#fff",
+          },
+        });
         navigate("/");
       } else {
-        alert(data.message);
+        toast.error(data.message || "Invalid email or password", {
+          position: "top-center",
+          ...toastStyle,
+        });
       }
     } catch (error) {
       console.error(error);
+      toast.error("Something went wrong. Please try again.", {
+        position: "top-center",
+        ...toastStyle,
+      });
     }
   };
 

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
 import { addToCart } from "../redux/slice/cartSlice";
+import { AuthContext } from "../context/AuthContext";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -15,6 +16,9 @@ const ProductDetail = () => {
   const navigate = useNavigate();
 
   const cartItems = useSelector((state) => state.cart.cartItems);
+
+  const { user } = useContext(AuthContext);
+  const isLoggedIn = Boolean(user);
 
   const isInCart = cartItems.some(
     (item) => item.productId === product?._id
@@ -36,8 +40,27 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
+  // Redirects to login, remembering where the user was trying to go
+  const redirectToLogin = () => {
+    toast.error("Please log in to continue", {
+      position: "top-right",
+      style: {
+        background: "#18181b",
+        color: "#fff",
+        border: "1px solid #f97316",
+      },
+    });
+
+    navigate("/login", { state: { from: `/product/${id}` } });
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
+
+    if (!isLoggedIn) {
+      redirectToLogin();
+      return;
+    }
 
     dispatch(
       addToCart({
@@ -65,6 +88,11 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (!product) return;
+
+    if (!isLoggedIn) {
+      redirectToLogin();
+      return;
+    }
 
     if (!isInCart) {
       dispatch(
@@ -151,7 +179,7 @@ const ProductDetail = () => {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="w-full h-[500px] object-cover rounded-2xl"
+              className="w-full h-[500px] object-contain rounded-2xl"
             />
           </motion.div>
 
@@ -190,7 +218,7 @@ const ProductDetail = () => {
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
 
-              {isInCart ? (
+              {isLoggedIn && isInCart ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}

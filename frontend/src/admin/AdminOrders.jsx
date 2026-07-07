@@ -101,7 +101,7 @@ const AdminOrders = () => {
         opacity: 1,
         y: 0,
       }}
-      className="max-w-7xl mx-auto px-5 py-10"
+      className="max-w-7xl mx-auto px-5 py-10 mt-15"
     >
       {/* Header */}
       <div className="mb-8">

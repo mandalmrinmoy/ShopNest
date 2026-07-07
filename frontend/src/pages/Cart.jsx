@@ -69,7 +69,7 @@ const Cart = () => {
       transition={{
         duration: 0.5,
       }}
-      className="max-w-7xl mx-auto px-5 py-10"
+      className="max-w-7xl mx-auto px-5 py-10 mt-15"
     >
       <h1 className="text-4xl font-bold text-white mb-10">
         Shopping Cart
@@ -91,7 +91,7 @@ const Cart = () => {
               <img
                 src={item.imageUrl}
                 alt={item.name}
-                className="w-full md:w-36 h-36 object-cover rounded-xl"
+                className="w-full md:w-36 h-36 object-contain rounded-xl"
               />
 
               <div className="flex-1">

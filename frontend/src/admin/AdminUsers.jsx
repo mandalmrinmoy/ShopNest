@@ -7,11 +7,14 @@ import { AuthContext } from "../context/AuthContext";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
 
+const PAGE_SIZE = 5;
+
 const AdminUsers = () => {
   const { user } = useContext(AuthContext);
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -54,6 +57,25 @@ const AdminUsers = () => {
     (u) => u.role !== "admin"
   ).length;
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(users.length / PAGE_SIZE)
+  );
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const visibleUsers = users.slice(
+    startIndex,
+    startIndex + PAGE_SIZE
+  );
+
+  const goToPage = (page) => {
+    const safePage = Math.min(
+      Math.max(page, 1),
+      totalPages
+    );
+    setCurrentPage(safePage);
+  };
+
   return (
     <motion.div
       initial={{
@@ -64,7 +86,7 @@ const AdminUsers = () => {
         opacity: 1,
         y: 0,
       }}
-      className="max-w-7xl mx-auto px-5 py-10"
+      className="max-w-7xl mx-auto px-5 py-10 mt-15"
     >
       {/* Header */}
       <div className="mb-8">
@@ -143,46 +165,113 @@ const AdminUsers = () => {
             </thead>
 
             <tbody>
-              {users.map((u) => (
-                <tr
-                  key={u._id}
-                  className="border-b border-white/5 hover:bg-zinc-800/30 transition"
-                >
-                  <td className="p-5 text-zinc-300">
-                    {u._id.slice(0, 8)}...
-                  </td>
-
-                  <td className="p-5 text-white font-medium">
-                    {u.name}
-                  </td>
-
-                  <td className="p-5 text-zinc-300">
-                    {u.email}
-                  </td>
-
-                  <td className="p-5">
-                    <span
-                      className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                        u.role === "admin"
-                          ? "bg-orange-500/10 text-orange-500"
-                          : "bg-emerald-500/10 text-emerald-500"
-                      }`}
-                    >
-                      {u.role.toUpperCase()}
-                    </span>
-                  </td>
-
-                  <td className="p-5 text-zinc-400">
-                    {new Date(
-                      u.createdAt
-                    ).toLocaleDateString()}
+              {visibleUsers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="p-8 text-center text-zinc-400"
+                  >
+                    No users found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                visibleUsers.map((u) => (
+                  <tr
+                    key={u._id}
+                    className="border-b border-white/5 hover:bg-zinc-800/30 transition"
+                  >
+                    <td className="p-5 text-zinc-300">
+                      {u._id.slice(0, 8)}...
+                    </td>
+
+                    <td className="p-5 text-white font-medium">
+                      {u.name}
+                    </td>
+
+                    <td className="p-5 text-zinc-300">
+                      {u.email}
+                    </td>
+
+                    <td className="p-5">
+                      <span
+                        className={`px-3 py-2 rounded-xl text-sm font-semibold ${
+                          u.role === "admin"
+                            ? "bg-orange-500/10 text-orange-500"
+                            : "bg-emerald-500/10 text-emerald-500"
+                        }`}
+                      >
+                        {u.role.toUpperCase()}
+                      </span>
+                    </td>
+
+                    <td className="p-5 text-zinc-400">
+                      {new Date(
+                        u.createdAt
+                      ).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
 
           </table>
         </div>
+
+        {/* Pagination */}
+        {users.length > 0 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-5 py-5 border-t border-white/5">
+            <p className="text-zinc-400 text-sm">
+              Showing {startIndex + 1}-
+              {Math.min(
+                startIndex + PAGE_SIZE,
+                users.length
+              )}{" "}
+              of {users.length} users
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  goToPage(currentPage - 1)
+                }
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Prev
+              </button>
+
+              {Array.from(
+                { length: totalPages },
+                (_, i) => i + 1
+              ).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => goToPage(page)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer ${
+                    page === currentPage
+                      ? "bg-orange-500 text-white"
+                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() =>
+                  goToPage(currentPage + 1)
+                }
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </motion.div>

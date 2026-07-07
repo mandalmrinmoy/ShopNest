@@ -16,7 +16,7 @@ const OrderSuccess = () => {
       transition={{
         duration: 0.6,
       }}
-      className="max-w-3xl mx-auto px-5 py-20"
+      className="max-w-3xl mx-auto px-5 py-20 mt-5"
     >
       <div className="bg-zinc-900 border border-white/5 rounded-3xl p-10 text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
 
