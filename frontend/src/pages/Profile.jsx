@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
-import CenterModal from "../components/CenterModal";
+import centerModal from "../components/centerModal";
 import toast from "react-hot-toast";
 
 const Profile = () => {
@@ -24,7 +24,7 @@ const Profile = () => {
 
       navigate("/login");
     };
-    
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
