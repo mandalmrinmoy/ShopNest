@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "motion/react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import toast from "react-hot-toast";
-import centerModal from "./centerModal";
+import CenterModal from "./centerModal";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);

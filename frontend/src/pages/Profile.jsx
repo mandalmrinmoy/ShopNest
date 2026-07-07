@@ -2,8 +2,8 @@ import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
-import centerModal from "../components/centerModal";
 import toast from "react-hot-toast";
+import CenterModal from "../components/centerModal";
 
 const Profile = () => {
   const { user, logout } = useContext(AuthContext);
