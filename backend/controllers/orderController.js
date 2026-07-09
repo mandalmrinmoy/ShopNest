@@ -14,11 +14,19 @@ const createOrder = async (req, res) => {
       });
     }
 
-    let grandTotal = 0;
+    // Fetch all needed products in a single query
+    const productIds = orderItems.map((item) => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } });
 
-    // Check stock & update stock
+    // Build a quick lookup map
+    const productMap = {};
+    products.forEach((p) => (productMap[p._id.toString()] = p));
+
+    let grandTotal = 0;
+    const bulkStockUpdates = [];
+
     for (const item of orderItems) {
-      const product = await Product.findById(item.productId);
+      const product = productMap[item.productId];
 
       if (!product) {
         return res.status(404).json({
@@ -32,15 +40,20 @@ const createOrder = async (req, res) => {
         });
       }
 
-      // Reduce stock
-      product.stock -= item.quantity;
-      await product.save();
-
       // Calculate item total
       item.totalPrice = product.price * item.quantity;
-
       grandTotal += item.totalPrice;
+
+      bulkStockUpdates.push({
+        updateOne: {
+          filter: { _id: product._id },
+          update: { $inc: { stock: -item.quantity } },
+        },
+      });
     }
+
+    // Apply all stock updates in a single batched request
+    await Product.bulkWrite(bulkStockUpdates);
 
     // Create order
     const order = new Order({
@@ -57,8 +70,11 @@ const createOrder = async (req, res) => {
     // Get user
     const user = await User.findById(req.user._id);
 
-    // Send email
-    await sendEmail(
+    // Respond immediately — don't make the client wait on email
+    res.status(201).json(createdOrder);
+
+    // Send email in background
+    sendEmail(
       user.email,
       "Order Placed Successfully",
       `Hello ${user.name}, Your order has been placed successfully.
@@ -70,9 +86,7 @@ const createOrder = async (req, res) => {
 
         Thank you for shopping with us.
 `,
-    );
-
-    res.status(201).json(createdOrder);
+    ).catch((err) => console.error("Order email failed:", err.message));
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -127,16 +141,17 @@ const updateOrderStatus = async (req, res) => {
 
     const updatedOrder = await order.save();
 
-    // Send status update email
-    await sendEmail(
+    // Respond immediately
+    res.status(200).json(updatedOrder);
+
+    // Send status update email in background
+    sendEmail(
       order.user.email,
       "Order Status Updated",
       `Hello ${order.user.name},Your order status has been updated.
       Order ID: ${order._id} New Status: ${order.status}
       Thank you for shopping with us.`,
-    );
-
-    res.status(200).json(updatedOrder);
+    ).catch((err) => console.error("Status update email failed:", err.message));
   } catch (error) {
     res.status(500).json({
       message: error.message,

@@ -28,7 +28,7 @@ const registerUser = async (req, res) => {
         Your OTP for ShopNest registration is: ${otp}`;
 
       // TODOS: welcome mail
-      await sendEmail(
+      sendEmail(
         email,
         "Welcome to ShopNest - Your OTP for Registration",
         message,
